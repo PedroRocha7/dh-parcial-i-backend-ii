@@ -1,0 +1,108 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - '5439:5439'
+    networks:
+      - local-keycloak
+    volumes:
+      - db:/var/lib/postgresql/data
+  
+  mongo-db:
+    image: mongo
+    ports:
+      - 27018:27018
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: adminpass
+      MONGO_INITDB_DATABASE: moviesdb
+
+  eureka-service:
+    build: ./eureka-server #en esta carpeta se encuentra el dockerfile
+    image: eureka-service:1
+    mem_limit: 512m
+    ports:
+      - 8761:8761
+
+  keycloak:
+    depends_on:
+      - postgres
+    container_name: local_keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_IMPORT: keycloak_config\realm-digitalmedia.json
+      KC_DB: postgres
+      KC_DB_PASSWORD: 1234
+      KC_DB_USERNAME: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+    image: quay.io/keycloak/keycloak:18.0.0
+    command: start-dev
+    ports:
+      - "8082:8080"
+    restart: unless-stopped
+    networks:
+      - local-keycloak
+
+  bill-service:
+    build: ./ms-bills #en esta carpeta se encuentra el dockerfile
+    depends_on:
+      - eureka-service
+    image: ms-bill:1
+    mem_limit: 512m
+    ports:
+      - 8085:8085
+    environment:
+      EUREKA_URL: http://eureka-service:8761/eureka
+      KEYCLOAK_URL: http://keycloak:8082/
+
+  api-gateway:
+    build: ./gateway-api #en esta carpeta se encuentra el dockerfile
+    depends_on:
+      - eureka-service
+    image: api-gateway:1
+    mem_limit: 512m
+    ports:
+      - 9090:9090
+    environment:
+      EUREKA_URL: http://eureka-service:8761/eureka
+      KEYCLOAK_URL: http://keycloak:8082/
+
+  users-service:
+    build: ./users-service #en esta carpeta se encuentra el dockerfile
+    depends_on:
+      - mongo-db
+    image: users-service:1
+    mem_limit: 512m
+    ports:
+      - 8086:8086
+    environment:
+      DB_URL: mongodb://mongo-db:27018/moviesdb
+      EUREKA_URL: http://eureka-service:8761/eureka
+      KEYCLOAK_URL: http://keycloak:8082/
+
+  movies-service:
+    build: ./movies-api #en esta carpeta se encuentra el dockerfile
+    depends_on:
+      - mongo-db
+    image: movies-service:1
+    mem_limit: 512m
+    ports:
+      - 8087:8087
+    environment:
+      DB_URL: mongodb://mongo-db:27018/moviesdb
+      EUREKA_URL: http://eureka-service:8761/eureka
+      KEYCLOAK_URL: http://keycloak:8082/
+
+networks:
+  local-keycloak:
+
+volumes:
+  db:
