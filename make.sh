@@ -1,19 +1,19 @@
-cd eureka-server/
+cd eureka-service/
 mvn clean && mvn package -DskipTests
 docker build . -t eureka-service
 cd ..
 
-cd gateway-api/
+cd api-gateway/
 mvn clean && mvn package -DskipTests
 docker build . -t api-gateway
 cd ..
 
-cd movies-api/
+cd movies-service/
 mvn clean && mvn package -DskipTests
 docker build . -t movies-service
 cd ..
 
-cd ms-bills/
+cd bill-service/
 mvn clean && mvn package -DskipTests
 docker build . -t bill-service
 cd ..

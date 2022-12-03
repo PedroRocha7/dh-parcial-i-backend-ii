@@ -1,6 +1,5 @@
-FROM openjdk:8-jdk-alpine
-RUN apk update && apk add bash
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
-COPY wait-for-it.sh .
-ENTRYPOINT ["./wait-for-it.sh", "bill-service:8088", "--", "java", "-jar", "app.jar"]
+FROM adoptopenjdk/openjdk11
+EXPOSE 8761
+ADD /target/users-service-0.0.1-SNAPSHOT.jar users-service
+COPY target/users-service-0.0.1-SNAPSHOT.jar users-service-0.0.1-SNAPSHOT.jar
+ENTRYPOINT ["java","-jar","users-service-0.0.1-SNAPSHOT.jar"]
