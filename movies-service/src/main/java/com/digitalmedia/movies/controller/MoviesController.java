@@ -37,7 +37,7 @@ public class MoviesController {
     private final MovieService movieService;
     private final MovieMapper movieMapper;
 
-    @PreAuthorize("hasAuthority('GROUP_admin') or hasAuthority('GROUP_client') or hasAuthority('GROUP_client')")
+    @PreAuthorize("hasAuthority('GROUP_admin') or hasAuthority('GROUP_client')")
     @GetMapping
     public List<MovieDto> getMovies() {
         return movieService.getMovies().stream()
@@ -45,7 +45,7 @@ public class MoviesController {
                 .collect(Collectors.toList());
     }
 
-    @PreAuthorize("hasAuthority('GROUP_admin') or hasAuthority('GROUP_client') hasAuthority('GROUP_client')")
+    @PreAuthorize("hasAuthority('GROUP_admin') or hasAuthority('GROUP_client')")
     @GetMapping("/{imdbId}")
     public MovieDto getMovie(@PathVariable String imdbId) {
         Movie movie = movieService.validateAndGetMovie(imdbId);
@@ -78,7 +78,7 @@ public class MoviesController {
         return movieMapper.toMovieDto(movie);
     }
 
-    @PreAuthorize("hasAuthority('GROUP_admin') or hasAuthority('GROUP_client') hasAuthority('GROUP_client')")
+    @PreAuthorize("hasAuthority('GROUP_admin') or hasAuthority('GROUP_client')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{imdbId}/comments")
     public MovieDto addMovieComment(@PathVariable String imdbId, @Valid @RequestBody AddCommentRequest addCommentRequest, Principal principal) {
